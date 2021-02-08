@@ -1,6 +1,9 @@
 import requests
 from player import Player
 
+def sort_by_points(player):
+    return player.points
+
 def main():
     url = "https://nhlstatisticsforohtu.herokuapp.com/players"
     response = requests.get(url).json()
@@ -18,6 +21,7 @@ def main():
 
     print("Players from FIN 2021-01-04 19:15:32.85661")
     print("")
+    players = sorted(players, reverse=True, key=sort_by_points)
 
     for player in players:
         print(player)
