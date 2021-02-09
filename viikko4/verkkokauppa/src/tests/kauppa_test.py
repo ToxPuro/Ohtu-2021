@@ -270,4 +270,41 @@ class TestKauppa(unittest.TestCase):
         kauppa.tilimaksu("touko","54321")
         pankki_mock.tilisiirto.assert_called_with("touko",ANY,"54321",ANY,10)
 
+    def test_poista_korista_toimii(self):
+        pankki_mock = Mock()
+        viitegeneraattori_mock = Mock()
+
+        # palautetaan aina arvo 42
+        viitegeneraattori_mock.uusi.return_value = 42
+
+        varasto_mock = Mock()
+
+        # tehdään toteutus saldo-metodille
+        def varasto_saldo(tuote_id):
+            if tuote_id == 1:
+                return 1
+            if tuote_id ==2:
+                return 0
+
+        # tehdään toteutus hae_tuote-metodille
+        def varasto_hae_tuote(tuote_id):
+            if tuote_id == 1:
+                return Tuote(1, "maito", 5)
+            if tuote_id == 2:
+                return Tuote(2, "juusto", 3)
+
+        # otetaan toteutukset käyttöön
+        varasto_mock.saldo.side_effect = varasto_saldo
+        varasto_mock.hae_tuote.side_effect = varasto_hae_tuote
+
+        # alustetaan kauppa
+        kauppa = Kauppa(varasto_mock, pankki_mock, viitegeneraattori_mock)
+
+        kauppa.aloita_asiointi()
+        kauppa.lisaa_koriin(1)
+        kauppa.poista_korista(1)
+        kauppa.lisaa_koriin(1)
+        kauppa.tilimaksu("touko","12345")
+        pankki_mock.tilisiirto.assert_called_with(ANY,ANY,ANY,ANY,5)
+
 
